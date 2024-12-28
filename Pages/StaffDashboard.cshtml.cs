@@ -1,170 +1,221 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
+using System.Threading.Tasks;
 
 namespace SuperMarket.Pages
 {
+    [Authorize(Roles ="Staff")]
     public class StaffDashboardModel : PageModel
     {
+        private readonly string _connectionString;
+        private readonly ILogger<StaffDashboardModel> _logger;
+
         public List<Product> Products { get; set; } = new List<Product>();
         [BindProperty]
         public Product NewProduct { get; set; }
+        [TempData]
+        public string StatusMessage { get; set; }
 
-        public bool IsEditing => NewProduct?.ProductID != null && Convert.ToInt32(NewProduct.ProductID) != 0;
+        public bool IsEditing => !string.IsNullOrEmpty(NewProduct?.ProductID);
 
-        public void OnGet(int? editId)
+        public StaffDashboardModel(IConfiguration configuration, ILogger<StaffDashboardModel> logger)
         {
-            LoadProducts();
-
-            if (editId.HasValue)
-            {
-                NewProduct = Products.FirstOrDefault(p => Convert.ToInt32(p.ProductID) == editId.Value);
-            }
-            else
-            {
-                NewProduct = new Product(); // Initialize a new product for adding
-            }
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            _logger = logger;
         }
 
-        public IActionResult OnPostAdd()
+        public async Task<IActionResult> OnGetAsync([FromRoute] string editId = null)
         {
-            if (!ModelState.IsValid)
-            {
-                LoadProducts();
-                return Page();
-            }
-
-            int productID;
-            if (!int.TryParse(NewProduct.ProductID, out productID))
-            {
-                ModelState.AddModelError("", "Product ID must be a valid integer.");
-                LoadProducts();
-                return Page();
-            }
-
-            bool isValidProductID = IsProductIDValid(productID);
-
-            if (isValidProductID)
-            {
-                ModelState.AddModelError("", "Product ID already exists. Please use a unique Product ID.");
-                LoadProducts();
-                return Page();
-            }
-
-            string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
-
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                string query = @"INSERT INTO Products 
-                                (ProductID, ProductName, Price, category, InventoryID, image)
-                                VALUES 
-                                (@ProductID, @ProductName, @Price, @Category, @InventoryID, @Image)";
-
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@ProductID", productID);
-                command.Parameters.AddWithValue("@ProductName", NewProduct.ProductName);
-                command.Parameters.AddWithValue("@Price", NewProduct.Price);
-                command.Parameters.AddWithValue("@Category", NewProduct.Category);
-                command.Parameters.AddWithValue("@InventoryID", NewProduct.InventoryID);
-                command.Parameters.AddWithValue("@Image", NewProduct.image);
-
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
-
-            return RedirectToPage();
-        }
-
-        public IActionResult OnPostEdit(int productId)
-        {
-            if (!ModelState.IsValid)
-            {
-                LoadProducts();
-                return Page();
-            }
-
-            string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
             try
             {
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    string query = "UPDATE Products SET ProductName = @ProductName, Price = @Price, category = @category, InventoryID = @InventoryID, image = @Image WHERE ProductID = @ProductID";
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@ProductName", NewProduct.ProductName);
-                    command.Parameters.AddWithValue("@Price", NewProduct.Price);
-                    command.Parameters.AddWithValue("@category", NewProduct.Category);
-                    command.Parameters.AddWithValue("@InventoryID", NewProduct.InventoryID);
-                    command.Parameters.AddWithValue("@Image", NewProduct.image);
-                    command.Parameters.AddWithValue("@ProductID", productId);
+                await LoadProductsAsync();
 
-                    connection.Open();
-                    command.ExecuteNonQuery();
+                if (!string.IsNullOrEmpty(editId))
+                {
+                    NewProduct = Products.FirstOrDefault(p => p.ProductID == editId);
+                    if (NewProduct == null)
+                    {
+                        StatusMessage = "Error: Product not found.";
+                        return RedirectToPage();
+                    }
+                }
+                else
+                {
+                    NewProduct = new Product();
                 }
 
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = "Error loading products. Please try again.";
                 return RedirectToPage();
             }
-            catch (SqlException e)
+        }
+
+        public async Task<IActionResult> OnPostAddAsync()
+        {
+            try
             {
-                Console.WriteLine(e.ToString());
+                if (!ModelState.IsValid)
+                {
+                    await LoadProductsAsync();
+                    return Page();
+                }
+
+                if (await IsProductIDExistsAsync(NewProduct.ProductID))
+                {
+                    ModelState.AddModelError("NewProduct.ProductID", "Product ID already exists.");
+                    await LoadProductsAsync();
+                    return Page();
+                }
+
+                using var connection = new SqlConnection(_connectionString);
+                await connection.OpenAsync();
+
+                var query = @"INSERT INTO products 
+                            (ProductID, ProductName, Price, category, InventoryID, image)
+                            VALUES 
+                            (@ProductID, @ProductName, @Price, @Category, @InventoryID, @Image)";
+
+                using var command = new SqlCommand(query, connection);
+                AddProductParameters(command, NewProduct);
+                await command.ExecuteNonQueryAsync();
+
+                StatusMessage = "Product added successfully.";
+                return RedirectToPage();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding product");
+                ModelState.AddModelError("", "Error adding product. Please try again.");
+                await LoadProductsAsync();
                 return Page();
             }
         }
 
-        public IActionResult OnPostDelete(string productId)
+        public async Task<IActionResult> OnPostEditAsync([FromRoute] string editId)
         {
-            string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            try
             {
-                string query = "DELETE FROM Products WHERE ProductID = @ProductID";
-                SqlCommand command = new SqlCommand(query, connection);
+                if (!ModelState.IsValid)
+                {
+                    await LoadProductsAsync();
+                    return Page();
+                }
+
+                using var connection = new SqlConnection(_connectionString);
+                await connection.OpenAsync();
+
+                var query = @"UPDATE products 
+                    SET ProductName = @ProductName, 
+                        Price = @Price, 
+                        category = @Category, 
+                        InventoryID = @InventoryID, 
+                        image = @Image 
+                    WHERE ProductID = @ProductID";
+
+                using var command = new SqlCommand(query, connection);
+                AddProductParameters(command, NewProduct);
+
+                int rowsAffected = await command.ExecuteNonQueryAsync();
+                if (rowsAffected == 0)
+                {
+                    ModelState.AddModelError("", "Product not found or no changes made.");
+                    await LoadProductsAsync();
+                    return Page();
+                }
+
+                StatusMessage = "Product updated successfully.";
+                return RedirectToPage();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating product");
+                ModelState.AddModelError("", "Error updating product. Please try again.");
+                await LoadProductsAsync();
+                return Page();
+            }
+        }
+
+        public async Task<IActionResult> OnPostDeleteAsync(string productId)
+        {
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+                await connection.OpenAsync();
+
+                var query = "DELETE FROM products WHERE ProductID = @ProductID";
+                using var command = new SqlCommand(query, connection);
                 command.Parameters.AddWithValue("@ProductID", productId);
 
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
-
-            return RedirectToPage();
-        }
-
-        private void LoadProducts()
-        {
-            string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                string query = "SELECT * FROM Products ORDER BY ProductName ASC";
-                SqlCommand command = new SqlCommand(query, connection);
-
-                connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
-                while (reader.Read())
+                int rowsAffected = await command.ExecuteNonQueryAsync();
+                if (rowsAffected == 0)
                 {
-                    Products.Add(new Product
-                    {
-                        ProductID = reader["ProductID"].ToString(),
-                        ProductName = reader["ProductName"].ToString(),
-                        Price = decimal.Parse(reader["Price"].ToString()), 
-                        Category = reader["category"].ToString(),
-                        InventoryID = reader["InventoryID"].ToString(),
-                        image = reader["image"].ToString()
-                    });
+                    StatusMessage = "Error: Product not found.";
+                    return RedirectToPage();
                 }
+
+                StatusMessage = "Product deleted successfully.";
+                return RedirectToPage();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting product");
+                StatusMessage = "Error deleting product. Please try again.";
+                return RedirectToPage();
             }
         }
 
-        private bool IsProductIDValid(int productID)
+        private async Task LoadProductsAsync()
         {
-           string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            Products.Clear();
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var query = "SELECT * FROM products ORDER BY ProductName ASC";
+            using var command = new SqlCommand(query, connection);
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
-                const string query = "SELECT COUNT(1) FROM Products WHERE ProductID = @ProductID";
-                var command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@ProductID", productID);
-                connection.Open();
-                return (int)command.ExecuteScalar() > 0;
+                Products.Add(new Product
+                {
+                    ProductID = reader["ProductID"].ToString(),
+                    ProductName = reader["ProductName"].ToString(),
+                    Price = decimal.Parse(reader["Price"].ToString()),
+                    Category = reader["category"].ToString(),
+                    InventoryID = reader["InventoryID"].ToString(),
+                    image = reader["image"].ToString()
+                });
             }
+        }
+
+        private async Task<bool> IsProductIDExistsAsync(string productId)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var query = "SELECT COUNT(1) FROM products WHERE ProductID = @ProductID";
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@ProductID", productId);
+
+            return (int)await command.ExecuteScalarAsync() > 0;
+        }
+
+        private void AddProductParameters(SqlCommand command, Product product)
+        {
+            command.Parameters.AddWithValue("@ProductID", product.ProductID);
+            command.Parameters.AddWithValue("@ProductName", product.ProductName ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("@Price", product.Price);
+            command.Parameters.AddWithValue("@category", product.Category ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("@InventoryID", product.InventoryID ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("@image", product.image ?? (object)DBNull.Value);
         }
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SuperMarket.Pages
 {
-    [AllowAnonymous]
+    [Authorize]
     public class IndexModel : PageModel
     {
         private readonly ILogger<IndexModel> _logger;

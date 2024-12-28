@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SuperMarket.Pages
 {
+    [Authorize]
     public class PaymentsModel : PageModel
     {
         [BindProperty]
@@ -13,18 +15,26 @@ namespace SuperMarket.Pages
 
         public IActionResult OnGet()
         {
-            // Retrieve order summary from TempData
-            if (TempData["Subtotal"] != null && TempData["Tax"] != null && TempData["Shipping"] != null && TempData["Total"] != null)
+            if (TempData["Subtotal"] != null && TempData["Tax"] != null &&
+            TempData["Shipping"] != null && TempData["Total"] != null)
             {
+                decimal subtotal = decimal.Parse(TempData["Subtotal"].ToString());
+                decimal taxRate = 0.14m; 
+                decimal shipping = 45m; 
+
+                decimal taxAmount = (subtotal * taxRate); 
+                decimal total = subtotal + shipping + taxAmount;
+
+                // Populate the OrderSummary
                 Summary = new OrderSummary
                 {
-                    Subtotal = (decimal)TempData["Subtotal"],
-                    Tax = (decimal)TempData["Tax"],
-                    Shipping = (decimal)TempData["Shipping"],
-                    Total = (decimal)TempData["Total"]
+                    Subtotal = subtotal,
+                    Tax = taxAmount,
+                    Shipping = shipping,
+                    Total = total
                 };
 
-                TempData.Keep(); // Keep TempData for postbacks
+                TempData.Keep(); // Keep TempData across requests
             }
 
             PaymentDetails = new PaymentForm();
@@ -38,10 +48,10 @@ namespace SuperMarket.Pages
                 // Re-populate the summary since TempData is not preserved across requests
                 Summary = new OrderSummary
                 {
-                    Subtotal = (decimal)TempData["Subtotal"],
-                    Tax = (decimal)TempData["Tax"],
-                    Shipping = (decimal)TempData["Shipping"],
-                    Total = (decimal)TempData["Total"]
+                    Subtotal = TempData["Subtotal"] != null ? decimal.Parse(TempData["Subtotal"].ToString()) : 0m,
+                    Tax = TempData["Tax"] != null ? decimal.Parse(TempData["Tax"].ToString()) : 0m,
+                    Shipping = TempData["Shipping"] != null ? decimal.Parse(TempData["Shipping"].ToString()) : 0m,
+                    Total = TempData["Total"] != null ? decimal.Parse(TempData["Total"].ToString()) : 0m
                 };
                 TempData.Keep();
                 return Page();
@@ -59,6 +69,7 @@ namespace SuperMarket.Pages
             ModelState.AddModelError(string.Empty, "Payment failed. Please check your details and try again.");
             return Page();
         }
+
 
         private bool ProcessPayment(PaymentForm paymentDetails)
         {

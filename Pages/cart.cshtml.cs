@@ -28,10 +28,10 @@ namespace SuperMarket.Pages
             CalculateCartTotals();
 
             // Store order summary details in TempData for Payments page
-            TempData["Subtotal"] = Subtotal;
-            TempData["Tax"] = Tax;
-            TempData["Shipping"] = Shipping;
-            TempData["Total"] = Total;
+            TempData["Subtotal"] = Subtotal.ToString("F2");
+            TempData["Tax"] = Tax.ToString("F2");
+            TempData["Shipping"] = Shipping.ToString("F2");
+            TempData["Total"] = Total.ToString("F2");
 
             return RedirectToPage("/Payments");
         }
@@ -66,6 +66,34 @@ namespace SuperMarket.Pages
                 Console.WriteLine(e.Message);
             }
         }
+
+        public IActionResult OnPostDelete(int id)
+        {
+            using SqlConnection connection = new SqlConnection(connectionString);
+
+            try
+            {
+                connection.Open();
+                string query = "DELETE FROM CartItem WHERE CartID = 1 AND ProductID = @ProductID";
+
+                using SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@ProductID", id);
+
+                int rowsAffected = command.ExecuteNonQuery();
+                if (rowsAffected > 0)
+                {
+                    LoadCartDetails();
+                    CalculateCartTotals();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            return RedirectToPage(); 
+        }
+
 
         private void CalculateCartTotals()
         {

@@ -48,8 +48,20 @@ namespace SuperMarket.Pages.Account
 
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User logged in.");
-                    return LocalRedirect(returnUrl);
+                    var user = await _userManager.FindByEmailAsync(Input.Email);
+                    var roles = await _userManager.GetRolesAsync(user);
+                    if (roles.Contains("Admin"))
+                    {
+                        return RedirectToPage("/AdminDashboard");
+                    }
+                    else if(roles.Contains("Staff"))
+                    {
+                        return RedirectToPage("/StaffDashboard");
+                    }
+                    else
+                    {
+                        return LocalRedirect(returnUrl);
+                    }
                 }
                 else
                 {

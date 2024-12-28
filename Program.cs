@@ -16,17 +16,22 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+// Razor Pages and Session configuration
 builder.Services.AddRazorPages()
     .AddSessionStateTempDataProvider();
 builder.Services.AddSession();
 
+// Add logging services
+builder.Services.AddLogging();
+builder.Logging.AddConsole();  
+builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 // Cookie configuration for authentication
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/AccessDenied";
-    options.ExpireTimeSpan = TimeSpan.FromDays(30);
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
     options.SlidingExpiration = true;
 });
 
@@ -37,28 +42,18 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(30); // Set session timeout as needed
 });
 
-// Razor Pages configuration
-builder.Services.AddRazorPages();
-
 var app = builder.Build();
 
 // Middleware setup
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error");
-    app.UseHsts();
-}
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthentication();  // Authentication middleware
 app.UseAuthorization();   // Authorization middleware
-
 app.UseSession();  // Enable session middleware
 
+// Map Razor Pages
 app.MapRazorPages();
 
+// Run the app
 app.Run();
