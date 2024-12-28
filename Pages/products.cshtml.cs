@@ -23,9 +23,8 @@ namespace SuperMarket.Pages
 
             Products = new List<Product>();
 
-            string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
+            string connectionString = "Server=127.0.0.1,1433;Database=SMS;User=SA;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";
             SqlConnection connection = new SqlConnection(connectionString);
-
             try
             {
                 connection.Open();
@@ -101,7 +100,8 @@ namespace SuperMarket.Pages
 
         public IActionResult OnPostAddToCart(int productId, string productName, decimal productPrice, string productImage)
         {
-            string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
+
+            string connectionString = "Server=127.0.0.1,1433;Database=SMS;User=SA;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";            
             SqlConnection connection = new SqlConnection(connectionString);
             try
             {

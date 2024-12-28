@@ -3,72 +3,73 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace SuperMarket.Pages
 {
-    public class PaymentsItem
+    public class PaymentsModel : PageModel
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public decimal Price { get; set; }
-        public int Quantity { get; set; }
-    }
+        [BindProperty]
+        public PaymentForm PaymentDetails { get; set; }
 
-    public class Payments
-    {
-        public List<PaymentsItem> Items { get; set; } = new List<PaymentsItem>();
+        public OrderSummary Summary { get; private set; }
 
-        public void AddItem(PaymentsItem item)
+        public IActionResult OnGet()
         {
-            var existingItem = Items.FirstOrDefault(i => i.Id == item.Id);
-            if (existingItem != null)
+            // Retrieve order summary from TempData
+            if (TempData["Subtotal"] != null && TempData["Tax"] != null && TempData["Shipping"] != null && TempData["Total"] != null)
             {
-                existingItem.Quantity += item.Quantity;
+                Summary = new OrderSummary
+                {
+                    Subtotal = (decimal)TempData["Subtotal"],
+                    Tax =      (decimal)TempData["Tax"],
+                    Shipping = (decimal)TempData["Shipping"],
+                    Total =    (decimal)TempData["Total"]
+                };
+
+                TempData.Keep(); // Keep TempData for postbacks
             }
             else
             {
-                Items.Add(item);
+                return RedirectToPage("/Cart"); // Redirect back to the cart if no summary data is available
             }
+
+            PaymentDetails = new PaymentForm();
+            return Page();
         }
 
-        public void UpdateItemQuantity(int itemId, int quantity)
+        public IActionResult OnPost()
         {
-            var item = Items.FirstOrDefault(i => i.Id == itemId);
-            if (item != null)
+            if (!ModelState.IsValid)
             {
-                if (quantity == 0)
+                // Re-populate the summary since TempData is not preserved across requests
+                Summary = new OrderSummary
                 {
-                    Items.Remove(item);
-                }
-                else
-                {
-                    item.Quantity = quantity;
-                }
+                    Subtotal = (decimal)TempData["Subtotal"],
+                    Tax =      (decimal)TempData["Tax"],
+                    Shipping = (decimal)TempData["Shipping"],
+                    Total =    (decimal)TempData["Total"]
+                };
+                TempData.Keep();
+                return Page();
             }
+
+            // Process payment details (mock logic for now)
+            TempData["SuccessMessage"] = "Payment completed successfully!";
+            return RedirectToPage("/Success"); // Navigate to a success page
         }
 
-        public void RemoveItem(int itemId)
+        public class PaymentForm
         {
-            var item = Items.FirstOrDefault(i => i.Id == itemId);
-            if (item != null)
-            {
-                Items.Remove(item);
-            }
+            public string CardName { get; set; }
+            public string CardNumber { get; set; }
+            public string ExpiryDate { get; set; }
+            public string CVV { get; set; }
+            public string BillingAddress { get; set; }
         }
 
-        public decimal GetTotal()
+        public class OrderSummary
         {
-            return Items.Sum(i => i.Price * i.Quantity);
-        }
-
-        public int GetItemCount()
-        {
-            return Items.Sum(i => i.Quantity);
-        }
-
-    }
-
-    public class PaymentsModel : PageModel
-    {
-        public void OnGet()
-        {
+            public decimal Subtotal { get; set; }
+            public decimal Tax { get; set; }
+            public decimal Shipping { get; set; }
+            public decimal Total { get; set; }
         }
     }
 }

@@ -4,109 +4,86 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<div class="container my-5">
-    <h1 class="mb-4">@ViewData["Title"]</h1>
+<h1>Admin Dashboard</h1>
 
-    <!-- Display validation errors -->
-    <div asp-validation-summary="All" class="alert alert-danger"></div>
+<!-- Display validation summary -->
+@Html.ValidationSummary(true)
 
-    <h2 class="mb-3">@((Model.NewProduct != null && Convert.ToInt32(Model.NewProduct.ProductID) != 0) ? "Edit Product" : "Add New Product")</h2>
-
-    <form method="post" asp-page-handler="@(Model.IsEditing ? "Edit" : "Add")" class="row g-3">
-        @if (Model.IsEditing)
+<!-- Display staff members in a table -->
+<table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Staff ID</th>
+            <th>Staff Name</th>
+            <th>Staff Role</th>
+            <th>Staff Phone</th>
+            <th>Admin ID</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var staff in Model.Staff)
         {
-                <input type="hidden" name="productId" value="@Model.NewProduct.ProductID" />
+            <tr>
+                <td>@staff.StaffID</td>
+                <td>@staff.StaffName</td>
+                <td>@staff.StaffRole</td>
+                <td>@staff.StaffPhone</td>
+                <td>@staff.AdminID</td>
+                <td>
+                    <!-- Edit and Delete actions -->
+                    <a asp-page="./AdminDashboard" asp-route-editId="@staff.StaffID">Edit</a> |
+                    <form method="post" asp-page-handler="Delete" asp-route-staffID="@staff.StaffID" style="display:inline;">
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
         }
+    </tbody>
+</table>
 
-        <div class="col-md-6">
-            <label asp-for="NewProduct.ProductID" class="form-label"></label>
-            <input asp-for="NewProduct.ProductID" 
-                class="form-control" 
-                readonly="@Model.IsEditing" />
-            <span asp-validation-for="NewProduct.ProductID" class="text-danger"></span>
-        </div>
+<!-- Form to add/edit staff members -->
+<h2>@(Model.IsEditing ? "Edit Staff" : "Add New Staff")</h2>
 
-        <div class="col-md-6">
-            <label asp-for="NewProduct.ProductName" class="form-label"></label>
-            <input asp-for="NewProduct.ProductName" class="form-control" />
-            <span asp-validation-for="NewProduct.ProductName" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-6">
-            <label asp-for="NewProduct.Price" class="form-label"></label>
-            <input asp-for="NewProduct.Price" class="form-control" />
-            <span asp-validation-for="NewProduct.Price" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-6">
-            <label asp-for="NewProduct.Category" class="form-label"></label>
-            <input asp-for="NewProduct.Category" class="form-control" />
-            <span asp-validation-for="NewProduct.Category" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-6">
-            <label asp-for="NewProduct.InventoryID" class="form-label"></label>
-            <input asp-for="NewProduct.InventoryID" class="form-control" />
-            <span asp-validation-for="NewProduct.InventoryID" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-6">
-            <label asp-for="NewProduct.image" class="form-label"></label>
-            <input asp-for="NewProduct.image" class="form-control" />
-            <span asp-validation-for="NewProduct.image" class="text-danger"></span>
-        </div>
-
-        <div class="col-12">
-            <button type="submit" class="btn btn-primary">
-                @((Model.NewProduct != null && Convert.ToInt32(Model.NewProduct.ProductID) != 0) ? "Update Product" : "Add Product")
-            </button>
-        </div>
-    </form>
-
-    @if (Model.NewProduct != null && Convert.ToInt32(Model.NewProduct.ProductID) != 0)
+<form method="post">
+    @if(Model.IsEditing)
     {
-            <p class="mt-3">
-                <a asp-page="./AdminDashboard" class="btn btn-secondary">Cancel Editing</a>
-            </p>
+        <input type="hidden" asp-for="NewStaff.StaffID" />
+        <input type="hidden" name="handler" value="Edit" />
+    }
+    else
+    {
+        <input type="hidden" name="handler" value="Add" />
     }
 
-    <h2 class="mt-5">Product List</h2>
+    <div>
+        <label asp-for="NewStaff.StaffID">Staff ID:</label>
+        <input asp-for="NewStaff.StaffID" />
+        <span asp-validation-for="NewStaff.StaffID"></span>
+    </div>
+    <div>
+        <label asp-for="NewStaff.StaffName">Name:</label>
+        <input asp-for="NewStaff.StaffName" />
+        <span asp-validation-for="NewStaff.StaffName"></span>
+    </div>
+    <div>
+        <label asp-for="NewStaff.StaffRole">Role:</label>
+        <input asp-for="NewStaff.StaffRole" />
+        <span asp-validation-for="NewStaff.StaffRole"></span>
+    </div>
+    <div>
+        <label asp-for="NewStaff.StaffPhone">Phone:</label>
+        <input asp-for="NewStaff.StaffPhone" />
+        <span asp-validation-for="NewStaff.StaffPhone"></span>
+    </div>
+    <div>
+        <label asp-for="NewStaff.AdminID">Admin ID:</label>
+        <input asp-for="NewStaff.AdminID" />
+        <span asp-validation-for="NewStaff.AdminID"></span>
+    </div>
+    <button type="submit">@((Model.IsEditing ? "Update" : "Add") + " Staff")</button>
+</form>
 
-    <table class="table table-striped table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>@Html.DisplayNameFor(m => m.Products.First().ProductID)</th>
-                <th>@Html.DisplayNameFor(m => m.Products.First().ProductName)</th>
-                <th>@Html.DisplayNameFor(m => m.Products.First().Price)</th>
-                <th>@Html.DisplayNameFor(m => m.Products.First().Category)</th>
-                <th>@Html.DisplayNameFor(m => m.Products.First().InventoryID)</th>
-                <th>@Html.DisplayNameFor(m => m.Products.First().image)</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Products != null && Model.Products.Any())
-            {
-                @foreach (var product in Model.Products)
-                {
-                            <tr>
-                                <td>@product.ProductID</td>
-                                <td>@product.ProductName</td>
-                                <td>@product.Price.ToString("C")</td>
-                                <td>@product.Category</td>
-                                <td>@product.InventoryID</td>
-                                <td><img src="@product.image" alt="Product Image" class="img-fluid" style="max-height: 50px;" /></td>
-                                <td>
-                                    <a asp-page="./AdminDashboard" asp-route-editId="@product.ProductID" class="btn btn-sm btn-warning">Edit</a>
-                                    <form method="post" asp-page-handler="Delete" class="d-inline">
-                                        <input type="hidden" name="productId" value="@product.ProductID" />
-                                        <button type="submit" class="btn btn-sm btn-danger" 
-                                                onclick="return confirm('Are you sure you want to delete this product?');">Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                }
-            }
-        </tbody>
-    </table>
-</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
