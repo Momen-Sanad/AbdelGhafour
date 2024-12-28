@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Linq;
 
 namespace SuperMarket.Pages
 {
+    [Authorize]
     public class ProductsModel : PageModel
     {
         public List<Product> Products { get; set; }
@@ -23,8 +25,9 @@ namespace SuperMarket.Pages
 
             Products = new List<Product>();
 
-            string connectionString = "Server=127.0.0.1,1433;Database=SMS;User=SA;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";
+            string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
             SqlConnection connection = new SqlConnection(connectionString);
+
             try
             {
                 connection.Open();
@@ -100,8 +103,7 @@ namespace SuperMarket.Pages
 
         public IActionResult OnPostAddToCart(int productId, string productName, decimal productPrice, string productImage)
         {
-
-            string connectionString = "Server=127.0.0.1,1433;Database=SMS;User=SA;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";            
+            string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
             SqlConnection connection = new SqlConnection(connectionString);
             try
             {

@@ -1,18 +1,22 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-//using SuperMarket.Data;
 using SuperMarket.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorPages();
-//builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    //options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddRazorPages()
+    .AddSessionStateTempDataProvider(); // Required for TempData
 
-//builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    //.AddEntityFrameworkStores<ApplicationDbContext>()
-    //.AddDefaultTokenProviders();
+builder.Services.AddSession(); // Required for using TempData and sessions
+
+// Uncomment and configure if you plan to use Entity Framework and Identity:
+// builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+//     .AddEntityFrameworkStores<ApplicationDbContext>()
+//     .AddDefaultTokenProviders();
 
 var app = builder.Build();
 
@@ -20,16 +24,16 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    app.UseHsts(); // Enable HTTP Strict Transport Security for production
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseAuthentication();
 
 app.UseRouting();
 
+app.UseSession(); // Add session middleware here
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
