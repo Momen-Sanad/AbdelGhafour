@@ -10,7 +10,7 @@ namespace SuperMarket.Pages
     [Authorize]
     public class CartModel : PageModel
     {
-        public Cart ShoppingCart { get; set; } = new Cart();
+        public ShoppingCart ShoppingCart { get; set; } = new ShoppingCart();
         string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
         public void OnGet()
         {

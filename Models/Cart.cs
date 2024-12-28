@@ -1,8 +1,22 @@
-﻿namespace SuperMarket.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SuperMarket.Models
 {
-    public class Cart
+    public class ShoppingCart
     {
+        [Key]
+        public int CartId { get; set; } // Standard C# convention: CartId
+        public int CustomerId { get; set; } // Foreign key to Customer
+        public DateTime CreationDate { get; set; } // DateTime by default
+
+        public Customer Customer { get; set; }
+
         public List<CartItem> Items { get; set; } = new List<CartItem>();
+
+        public ShoppingCart()
+        {
+            CreationDate = DateTime.Now;
+        }
 
         public void AddItem(CartItem item)
         {
@@ -51,6 +65,5 @@
         {
             return Items.Sum(i => i.Quantity);
         }
-
     }
 }
