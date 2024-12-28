@@ -17,6 +17,7 @@ namespace SuperMarket.Pages
 
         public void OnGet(int? editId)
         {
+
             LoadProducts();
 
             if (editId.HasValue)

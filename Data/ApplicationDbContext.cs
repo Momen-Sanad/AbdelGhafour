@@ -1,14 +1,15 @@
-﻿// using Microsoft.AspNetCore.Identity;
-// using Microsoft.EntityFrameworkCore;
-// using SuperMarket.Models;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using SuperMarket.Models;
 
 
-// namespace SuperMarket.Data  
-// {
-//     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>  // Derive from IdentityDbContext
-//     {
-//         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-//         {
-//         }
-//     }
-// }
+namespace SuperMarket.Data
+{
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>  
+    {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+        {
+        }
+    }
+}

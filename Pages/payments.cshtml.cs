@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace SuperMarket.Pages
 {
+    [Authorize]
     public class PaymentsItem
     {
         public int Id { get; set; }

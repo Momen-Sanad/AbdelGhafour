@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SuperMarket.Models;
@@ -6,6 +7,7 @@ using System.Data.SqlClient;
 
 namespace SuperMarket.Pages
 {
+    [Authorize]
     public class CartModel : PageModel
     {
         public Cart ShoppingCart { get; set; } = new Cart();

@@ -1,54 +1,64 @@
-// using Microsoft.AspNetCore.Identity;
-// using Microsoft.AspNetCore.Mvc;
-// using Microsoft.AspNetCore.Mvc.RazorPages;
-// using SuperMarket.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using SuperMarket.Models;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
 
-// namespace SuperMarket.Pages.Account
-// {
-//     public class LoginModel : PageModel
-//     {
-//         private readonly SignInManager<ApplicationUser> _signInManager;
-//         private readonly UserManager<ApplicationUser> _userManager;
+namespace SuperMarket.Pages.Account
+{
+    [AllowAnonymous]
+    public class LoginModel : PageModel
+    {
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<LoginModel> _logger;
 
-//         public LoginModel(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
-//         {
-//             _signInManager = signInManager;
-//             _userManager = userManager;
-//         }
+        public LoginModel(
+            SignInManager<ApplicationUser> signInManager,
+            UserManager<ApplicationUser> userManager,
+            ILogger<LoginModel> logger)
+        {
+            _signInManager = signInManager;
+            _userManager = userManager;
+            _logger = logger;
+        }
 
-//         [BindProperty]
-//         public InputModel Input { get; set; }
+        [BindProperty]
+        public InputModel Input { get; set; }
 
-//         public class InputModel
-//         {
-//             public string Email { get; set; }
-//             public string Password { get; set; }
-//         }
+        public class InputModel
+        {
+            public string Email { get; set; }
+            public string Password { get; set; }
+            public bool RememberMe { get; set; } = true;
+        }
 
-//         public async Task<IActionResult> OnPostAsync()
-//         {
-//             if (!ModelState.IsValid)
-//             {
-//                 return Page();
-//             }
+        public async Task<IActionResult> OnPostAsync(string returnUrl = null)
+        {
+            returnUrl ??= Url.Content("~/");
 
-//             var user = await _userManager.FindByEmailAsync(Input.Email);
-//             if (user == null)
-//             {
-//                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-//                 return Page();
-//             }
+            if (ModelState.IsValid)
+            {
+                var result = await _signInManager.PasswordSignInAsync(
+                    Input.Email,
+                    Input.Password,
+                    Input.RememberMe,
+                    lockoutOnFailure: false);
 
-//             var result = await _signInManager.PasswordSignInAsync(user, Input.Password, false, false);
-//             if (result.Succeeded)
-//             {
-//                 return RedirectToPage("/Index");
-//             }
-//             else
-//             {
-//                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-//                 return Page();
-//             }
-//         }
-//     }
-// }
+                if (result.Succeeded)
+                {
+                    _logger.LogInformation("User logged in.");
+                    return LocalRedirect(returnUrl);
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    return Page();
+                }
+            }
+
+            return Page();
+        }
+    }
+}

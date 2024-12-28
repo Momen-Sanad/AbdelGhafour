@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Linq;
 
 namespace SuperMarket.Pages
 {
+    [Authorize]
     public class ProductsModel : PageModel
     {
         public List<Product> Products { get; set; }
