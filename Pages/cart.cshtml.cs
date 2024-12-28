@@ -44,5 +44,32 @@ namespace SuperMarket.Pages
                 connection.Close();
             }
         }
+
+        public IActionResult OnPostDeleteItem(int productId)
+        {
+            SqlConnection connection = new SqlConnection(connectionString);
+            try
+            {
+                connection.Open();
+                string query = "DELETE FROM CartItem WHERE CartID = 1 AND ProductID = @ProductId";
+
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@ProductId", productId);
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            finally
+            {
+                connection.Close();
+            }
+
+            return RedirectToPage();
+        }
+
     }
 }
