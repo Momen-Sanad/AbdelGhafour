@@ -16,6 +16,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddRazorPages()
+    .AddSessionStateTempDataProvider();
+builder.Services.AddSession();
+
+
 // Cookie configuration for authentication
 builder.Services.ConfigureApplicationCookie(options =>
 {

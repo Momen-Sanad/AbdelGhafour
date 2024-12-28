@@ -9,24 +9,23 @@ namespace SuperMarket.Pages
 {
     public class AdminDashboardModel : PageModel
     {
-        public List<Product> Products { get; set; } = new List<Product>();
+        public List<Staff> Staff { get; set; } = new List<Staff>();
         [BindProperty]
-        public Product NewProduct { get; set; }
+        public Staff NewStaff { get; set; }
 
-        public bool IsEditing => NewProduct?.ProductID != null && Convert.ToInt32(NewProduct.ProductID) != 0;
+        public bool IsEditing => NewStaff?.StaffID != null && NewStaff.StaffID != 0;
 
         public void OnGet(int? editId)
         {
-
-            LoadProducts();
+            LoadStaff();
 
             if (editId.HasValue)
             {
-                NewProduct = Products.FirstOrDefault(p => Convert.ToInt32(p.ProductID) == editId.Value);
+                NewStaff = Staff.FirstOrDefault(p => Convert.ToInt32(p.StaffID) == editId.Value);
             }
             else
             {
-                NewProduct = new Product(); // Initialize a new product for adding
+                NewStaff = new Staff(); // Initialize a new Staff for adding
             }
         }
 
@@ -34,24 +33,24 @@ namespace SuperMarket.Pages
         {
             if (!ModelState.IsValid)
             {
-                LoadProducts();
+                LoadStaff();
                 return Page();
             }
 
-            int productID;
-            if (!int.TryParse(NewProduct.ProductID, out productID))
+            int StaffID = NewStaff.StaffID;
+            if (StaffID <= 0)
             {
-                ModelState.AddModelError("", "Product ID must be a valid integer.");
-                LoadProducts();
+                ModelState.AddModelError("", "Staff ID must be a valid integer.");
+                LoadStaff();
                 return Page();
             }
 
-            bool isValidProductID = IsProductIDValid(productID);
+            bool isValidStaffID = IsStaffIDValid(StaffID);
 
-            if (isValidProductID)
+            if (isValidStaffID)
             {
-                ModelState.AddModelError("", "Product ID already exists. Please use a unique Product ID.");
-                LoadProducts();
+                ModelState.AddModelError("", "Staff ID already exists. Please use a unique Staff ID.");
+                LoadStaff();
                 return Page();
             }
 
@@ -59,18 +58,17 @@ namespace SuperMarket.Pages
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                string query = @"INSERT INTO Products 
-                                (ProductID, ProductName, Price, category, InventoryID, image)
+                string query = @"INSERT INTO Staff
+                                (StaffID, StaffName, StaffRole, StaffPhone, AdminID)
                                 VALUES 
-                                (@ProductID, @ProductName, @Price, @Category, @InventoryID, @Image)";
+                                (@StaffID, @StaffName, @StaffRole, @StaffPhone, @AdminID)";
 
                 SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@ProductID", productID);
-                command.Parameters.AddWithValue("@ProductName", NewProduct.ProductName);
-                command.Parameters.AddWithValue("@Price", NewProduct.Price);
-                command.Parameters.AddWithValue("@Category", NewProduct.Category);
-                command.Parameters.AddWithValue("@InventoryID", NewProduct.InventoryID);
-                command.Parameters.AddWithValue("@Image", NewProduct.image);
+                command.Parameters.AddWithValue("@StaffID", StaffID);
+                command.Parameters.AddWithValue("@StaffName", NewStaff.StaffName);
+                command.Parameters.AddWithValue("@StaffRole", NewStaff.StaffRole);
+                command.Parameters.AddWithValue("@StaffPhone", NewStaff.StaffPhone);
+                command.Parameters.AddWithValue("@AdminID", NewStaff.StaffPhone);
 
                 connection.Open();
                 command.ExecuteNonQuery();
@@ -79,28 +77,25 @@ namespace SuperMarket.Pages
             return RedirectToPage();
         }
 
-        public IActionResult OnPostEdit(int productId)
+        public IActionResult OnPostEdit(int StaffID)
         {
             if (!ModelState.IsValid)
             {
-                LoadProducts();
+                LoadStaff();
                 return Page();
             }
 
-            string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
-
+              string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
             try
             {
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    string query = "UPDATE Products SET ProductName = @ProductName, Price = @Price, category = @category, InventoryID = @InventoryID, image = @Image WHERE ProductID = @ProductID";
+                    string query = "UPDATE Staff SET StaffName = @StaffName, StaffRole = @StaffRole, StaffPhone = @StaffPhone, AdminID = @AdminID WHERE StaffID = @StaffID";
                     SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@ProductName", NewProduct.ProductName);
-                    command.Parameters.AddWithValue("@Price", NewProduct.Price);
-                    command.Parameters.AddWithValue("@category", NewProduct.Category);
-                    command.Parameters.AddWithValue("@InventoryID", NewProduct.InventoryID);
-                    command.Parameters.AddWithValue("@Image", NewProduct.image);
-                    command.Parameters.AddWithValue("@ProductID", productId);
+                    command.Parameters.AddWithValue("@StaffName", NewStaff.StaffName);
+                    command.Parameters.AddWithValue("@StaffRole", NewStaff.StaffRole);
+                    command.Parameters.AddWithValue("@StaffPhone", NewStaff.StaffPhone);
+                    command.Parameters.AddWithValue("@AdminID", NewStaff.AdminID);
 
                     connection.Open();
                     command.ExecuteNonQuery();
@@ -115,15 +110,14 @@ namespace SuperMarket.Pages
             }
         }
 
-        public IActionResult OnPostDelete(string productId)
+        public IActionResult OnPostDelete(string StaffID)
         {
             string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
-
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                string query = "DELETE FROM Products WHERE ProductID = @ProductID";
+                string query = "DELETE FROM Staff WHERE StaffID = @StaffID";
                 SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@ProductID", productId);
+                command.Parameters.AddWithValue("@StaffID", StaffID);
 
                 connection.Open();
                 command.ExecuteNonQuery();
@@ -132,44 +126,50 @@ namespace SuperMarket.Pages
             return RedirectToPage();
         }
 
-        private void LoadProducts()
+        private void LoadStaff()
         {
             string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
-
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                string query = "SELECT * FROM Products ORDER BY ProductName ASC";
+                string query = "SELECT * FROM Staff ORDER BY StaffName ASC";
                 SqlCommand command = new SqlCommand(query, connection);
 
                 connection.Open();
                 SqlDataReader reader = command.ExecuteReader();
                 while (reader.Read())
                 {
-                    Products.Add(new Product
+                    Staff.Add(new Staff
                     {
-                        ProductID = reader["ProductID"].ToString(),
-                        ProductName = reader["ProductName"].ToString(),
-                        Price = decimal.Parse(reader["Price"].ToString()), 
-                        Category = reader["category"].ToString(),
-                        InventoryID = reader["InventoryID"].ToString(),
-                        image = reader["image"].ToString()
+                        StaffID = int.Parse(reader["StaffID"].ToString()),
+                        StaffName = reader["StaffName"].ToString(),
+                        StaffRole = reader["StaffRole"].ToString(),
+                        StaffPhone = reader["StaffPhone"].ToString(),
+                        AdminID = int.Parse(reader["AdminID"].ToString()), 
                     });
                 }
             }
         }
 
-        private bool IsProductIDValid(int productID)
+        private bool IsStaffIDValid(int StaffID)
         {
             string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
-
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                const string query = "SELECT COUNT(1) FROM Products WHERE ProductID = @ProductID";
+                const string query = "SELECT COUNT(1) FROM Staff WHERE StaffID = @StaffID";
                 var command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@ProductID", productID);
+                command.Parameters.AddWithValue("@StaffID", StaffID);
                 connection.Open();
                 return (int)command.ExecuteScalar() > 0;
             }
         }
+    }
+
+    public class Staff
+    {
+        public int StaffID       { get; set; }
+        public string StaffName  { get; set; }
+        public string StaffRole  { get; set; }
+        public string StaffPhone { get; set; }
+        public int AdminID       { get; set; }
     }
 }
