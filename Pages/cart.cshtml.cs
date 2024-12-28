@@ -16,7 +16,7 @@ namespace SuperMarket.Pages
             try
             {
                 connection.Open();
-                string query = "SELECT * FROM CartItem WHERE CartID = 1";
+                string query = "SELECT ProductID, ProductName, Price, SUM(Quantity) AS TotalQuantity, ItemImage FROM CartItem WHERE CartID = 1 GROUP BY ProductID, ProductName, Price, ItemImage";
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
                     using (SqlDataReader reader = command.ExecuteReader())
@@ -28,7 +28,7 @@ namespace SuperMarket.Pages
                                 Id = int.Parse(reader["ProductID"].ToString()),
                                 Name = reader["ProductName"].ToString(),
                                 Price = decimal.Parse(reader["Price"].ToString()),
-                                Quantity = int.Parse(reader["Quantity"].ToString()),
+                                Quantity = int.Parse(reader["TotalQuantity"].ToString()),
                                 image = reader["ItemImage"].ToString()
                             });
                         }
