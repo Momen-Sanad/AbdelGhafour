@@ -23,6 +23,8 @@ namespace SuperMarket.Pages
 
             Products = new List<Product>();
 
+            //string connectionString = "Server=127.0.0.1,1433;Database=SMS;User=SA;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";
+
             string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
             SqlConnection connection = new SqlConnection(connectionString);
 
@@ -97,6 +99,43 @@ namespace SuperMarket.Pages
             {
                 connection.Close();
             }
+        }
+
+        public IActionResult OnPostAddToCart(int productId, string productName, decimal productPrice, string productImage)
+        {
+
+            string connectionString = "Server=127.0.0.1,1433;Database=SMS;User=SA;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";
+
+//            string connectionString = "Server=127.0.0.1,1433;Database=SMS;User=SA;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";
+
+            //string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
+            SqlConnection connection = new SqlConnection(connectionString);
+            try
+            {
+                connection.Open();
+
+                string query = "INSERT INTO CartItem (CartID, CustomerID, ProductID, ProductName, ProductImage, Price, Quantity) VALUES (1, 1, @ProductID, @ProductName, @ProductImage, @Price, 1)";
+
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    // Set parameters to prevent SQL injection
+                    command.Parameters.AddWithValue("@ProductID", productId);
+                    command.Parameters.AddWithValue("@Price", productPrice);
+                    command.Parameters.AddWithValue("@ProductName", productName);
+                    command.Parameters.AddWithValue("@ProductImage", productImage);
+                    command.ExecuteNonQuery();
+                }
+
+            }
+            catch (SqlException e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+            finally
+            {
+                connection.Close();
+            }
+            return RedirectToPage("cart");
         }
     }
         public class Product
