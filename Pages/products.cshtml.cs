@@ -11,6 +11,7 @@ using System.Security.Claims;
 namespace SuperMarket.Pages
 {
     [Authorize]
+    [Authorize]
     public class ProductsModel : PageModel
     {
         private readonly UserManager<ApplicationUser> _userManager;  // UserManager to access user info
@@ -39,6 +40,7 @@ namespace SuperMarket.Pages
 
             string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
             SqlConnection connection = new SqlConnection(connectionString);
+
             try
             {
                 connection.Open();

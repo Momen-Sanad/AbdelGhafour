@@ -4,85 +4,126 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<h1>Admin Dashboard</h1>
+<div class="container mt-4">
+    <h1>Admin Dashboard</h1>
 
-<!-- Display validation summary -->
-@Html.ValidationSummary(true)
-
-<!-- Display staff members in a table -->
-<table border="1" cellpadding="5" cellspacing="0">
-    <thead>
-        <tr>
-            <th>Staff ID</th>
-            <th>Staff Name</th>
-            <th>Staff Role</th>
-            <th>Staff Phone</th>
-            <th>Admin ID</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var staff in Model.Staff)
-        {
-            <tr>
-                <td>@staff.StaffID</td>
-                <td>@staff.StaffName</td>
-                <td>@staff.StaffRole</td>
-                <td>@staff.StaffPhone</td>
-                <td>@staff.AdminID</td>
-                <td>
-                    <!-- Edit and Delete actions -->
-                    <a asp-page="./AdminDashboard" asp-route-editId="@staff.StaffID">Edit</a> |
-                    <form method="post" asp-page-handler="Delete" asp-route-staffID="@staff.StaffID" style="display:inline;">
-                        <button type="submit">Delete</button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<!-- Form to add/edit staff members -->
-<h2>@(Model.IsEditing ? "Edit Staff" : "Add New Staff")</h2>
-
-<form method="post">
-    @if(Model.IsEditing)
+    @if (TempData["SuccessMessage"] != null)
     {
-        <input type="hidden" asp-for="NewStaff.StaffID" />
-        <input type="hidden" name="handler" value="Edit" />
-    }
-    else
-    {
-        <input type="hidden" name="handler" value="Add" />
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
     }
 
-    <div>
-        <label asp-for="NewStaff.StaffID">Staff ID:</label>
-        <input asp-for="NewStaff.StaffID" />
-        <span asp-validation-for="NewStaff.StaffID"></span>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (!ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <div asp-validation-summary="All"></div>
+        </div>
+    }
+
+    <!-- Staff List Table -->
+    <div class="table-responsive mt-4">
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Staff ID</th>
+                    <th>Staff Name</th>
+                    <th>Staff Role</th>
+                    <th>Staff Phone</th>
+                    <th>Admin ID</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var staff in Model.Staff)
+                {
+                    <tr>
+                        <td>@staff.StaffID</td>
+                        <td>@staff.StaffName</td>
+                        <td>@staff.StaffRole</td>
+                        <td>@staff.StaffPhone</td>
+                        <td>@staff.AdminID</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a asp-page="./AdminDashboard"
+                                   asp-route-editId="@staff.StaffID"
+                                   class="btn btn-primary btn-sm">Edit</a>
+                                <form method="post"
+                                      asp-page-handler="Delete"
+                                      asp-route-StaffID="@staff.StaffID"
+                                      style="display:inline;">
+                                    <button type="submit"
+                                            class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Are you sure you want to delete this staff member?');">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
-    <div>
-        <label asp-for="NewStaff.StaffName">Name:</label>
-        <input asp-for="NewStaff.StaffName" />
-        <span asp-validation-for="NewStaff.StaffName"></span>
+
+    <!-- Add/Edit Staff Form -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h2 class="mb-0">@(Model.IsEditing ? "Edit Staff" : "Add New Staff")</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" asp-page-handler="@(Model.IsEditing ? "Edit" : "Add")">
+                @if (Model.IsEditing)
+                {
+                    <input type="hidden" asp-for="NewStaff.StaffID" />
+                    <div class="form-group">
+                        <label asp-for="NewStaff.StaffID">Staff ID:</label>
+                        <input asp-for="NewStaff.StaffID" class="form-control" readonly />
+                        <span asp-validation-for="NewStaff.StaffID" class="text-danger"></span>
+                    </div>
+                }
+                else
+                {
+                    <div class="form-group">
+                        <label asp-for="NewStaff.StaffID">Staff ID:</label>
+                        <input asp-for="NewStaff.StaffID" class="form-control" />
+                        <span asp-validation-for="NewStaff.StaffID" class="text-danger"></span>
+                    </div>
+                }
+                <div class="form-group">
+                    <label asp-for="NewStaff.StaffName">Name:</label>
+                    <input asp-for="NewStaff.StaffName" class="form-control" />
+                    <span asp-validation-for="NewStaff.StaffName" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="NewStaff.StaffRole">Role:</label>
+                    <input asp-for="NewStaff.StaffRole" class="form-control" />
+                    <span asp-validation-for="NewStaff.StaffRole" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="NewStaff.StaffPhone">Phone:</label>
+                    <input asp-for="NewStaff.StaffPhone" class="form-control" />
+                    <span asp-validation-for="NewStaff.StaffPhone" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="NewStaff.AdminID">Admin ID:</label>
+                    <input asp-for="NewStaff.AdminID" class="form-control" />
+                    <span asp-validation-for="NewStaff.AdminID" class="text-danger"></span>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    @(Model.IsEditing ? "Update" : "Add") Staff
+                </button>
+            </form>
+        </div>
     </div>
-    <div>
-        <label asp-for="NewStaff.StaffRole">Role:</label>
-        <input asp-for="NewStaff.StaffRole" />
-        <span asp-validation-for="NewStaff.StaffRole"></span>
-    </div>
-    <div>
-        <label asp-for="NewStaff.StaffPhone">Phone:</label>
-        <input asp-for="NewStaff.StaffPhone" />
-        <span asp-validation-for="NewStaff.StaffPhone"></span>
-    </div>
-    <div>
-        <label asp-for="NewStaff.AdminID">Admin ID:</label>
-        <input asp-for="NewStaff.AdminID" />
-        <span asp-validation-for="NewStaff.AdminID"></span>
-    </div>
-    <button type="submit">@((Model.IsEditing ? "Update" : "Add") + " Staff")</button>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
