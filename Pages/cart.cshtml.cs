@@ -1,74 +1,75 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using SuperMarket.Models;
+using System.Data.SqlClient;
+
 
 namespace SuperMarket.Pages
 {
-    public class CartItem
+    public class CartModel : PageModel
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public decimal Price { get; set; }
-        public int Quantity { get; set; }
-    }
-
-    public class Cart
-    {
-        public List<CartItem> Items { get; set; } = new List<CartItem>();
-
-        public void AddItem(CartItem item)
-        {
-            var existingItem = Items.FirstOrDefault(i => i.Id == item.Id);
-            if (existingItem != null)
-            {
-                existingItem.Quantity += item.Quantity;
-            }
-            else
-            {
-                Items.Add(item);
-            }
-        }
-
-        public void UpdateItemQuantity(int itemId, int quantity)
-        {
-            var item = Items.FirstOrDefault(i => i.Id == itemId);
-            if (item != null)
-            {
-                if (quantity == 0)
-                {
-                    Items.Remove(item);
-                }
-                else
-                {
-                    item.Quantity = quantity;
-                }
-            }
-        }
-
-        public void RemoveItem(int itemId)
-        {
-            var item = Items.FirstOrDefault(i => i.Id == itemId);
-            if (item != null)
-            {
-                Items.Remove(item);
-            }
-        }
-
-        public decimal GetTotal()
-        {
-            return Items.Sum(i => i.Price * i.Quantity);
-        }
-
-        public int GetItemCount()
-        {
-            return Items.Sum(i => i.Quantity);
-        }
-
-    }
-
-    public class cartModel : PageModel
-    {
+        public Cart ShoppingCart { get; set; } = new Cart();
+        string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
         public void OnGet()
         {
+            SqlConnection connection = new SqlConnection(connectionString);
+            try
+            {
+                connection.Open();
+                string query = "SELECT ProductID, ProductName, Price, SUM(Quantity) AS TotalQuantity, ItemImage FROM CartItem WHERE CartID = 1 GROUP BY ProductID, ProductName, Price, ItemImage";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            ShoppingCart.AddItem(new CartItem
+                            {
+                                Id = int.Parse(reader["ProductID"].ToString()),
+                                Name = reader["ProductName"].ToString(),
+                                Price = decimal.Parse(reader["Price"].ToString()),
+                                Quantity = int.Parse(reader["TotalQuantity"].ToString()),
+                                image = reader["ItemImage"].ToString()
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            finally
+            {
+                connection.Close();
+            }
         }
+
+        public IActionResult OnPostDeleteItem(int productId)
+        {
+            SqlConnection connection = new SqlConnection(connectionString);
+            try
+            {
+                connection.Open();
+                string query = "DELETE FROM CartItem WHERE CartID = 1 AND ProductID = @ProductId";
+
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@ProductId", productId);
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            finally
+            {
+                connection.Close();
+            }
+
+            return RedirectToPage();
+        }
+
     }
 }

@@ -1,5 +1,5 @@
 ﻿@page
-@model SuperMarket.Pages.cartModel
+@model SuperMarket.Pages.CartModel
 @{ ViewData["Title"] = "Shopping Cart - FreshMart";}
 @{
     Layout = "~/Pages/Shared/_Layout.cshtml";
@@ -56,63 +56,43 @@
         <!-- Cart Items -->
         <div class="card mb-4">
             <div class="card-body">
-                <!-- Cart Item 1 -->
-                <div class="row align-items-center mb-4">
-                    <div class="col-md-2">
-                        <img src="https://images.unsplash.com/photo-1603833665858-e61d17a86224?auto=format&fit=crop&w=300&q=80" alt="Organic Bananas" class="img-fluid rounded">
-                    </div>
-                    <div class="col-md-4">
-                        <h5 class="mb-1">Organic Bananas</h5>
-                        <p class="text-muted mb-0">$2.99/lb</p>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="input-group">
-                            <button class="btn btn-outline-secondary" type="button">-</button>
-                            <input type="number" class="form-control text-center" value="2" min="0">
-                            <button class="btn btn-outline-secondary" type="button">+</button>
+             @if(Model.ShoppingCart.Items!=null)
+            {
+                @foreach(var item in Model.ShoppingCart.Items)
+                {
+                        <!-- Cart Item 1 -->
+                        <div class="row align-items-center mb-4">
+                            <div class="col-md-2">
+                                <img src="@item.image" alt="@item.Name" class="img-fluid rounded">
+                            </div>
+                            <div class="col-md-4">
+                                <h5 class="mb-1">@item.Name</h5>
+                                <p class="text-muted mb-0">@item.Price EGP</p>
+                            </div>
+                            <div class="col-md-3">
+                                <!-- Displaying Quantity (static) -->
+                                <p class="h5 mb-0">@item.Quantity</p>
+                            </div>
+                            <div class="col-md-2">
+                                <p class="h5 mb-0">@(@item.Price * @item.Quantity) EGP</p>
+                            </div>
+                            <div class="col-md-1">
+                                <form method="post" asp-page-handler="DeleteItem">
+                                    <input type="hidden" name="productId" value="@item.Id" />
+                                    <div class="col-md-1">
+                                        <button class="btn btn-link text-danger" type="submit">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                                                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-2">
-                        <p class="h5 mb-0">$5.98</p>
-                    </div>
-                    <div class="col-md-1">
-                        <button class="btn btn-link text-danger">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
-                                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
 
-                <!-- Cart Item 2 -->
-                <div class="row align-items-center">
-                    <div class="col-md-2">
-                        <img src="https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=300&q=80" alt="Organic Milk" class="img-fluid rounded">
-                    </div>
-                    <div class="col-md-4">
-                        <h5 class="mb-1">Organic Milk</h5>
-                        <p class="text-muted mb-0">$4.99/gallon</p>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="input-group">
-                            <button class="btn btn-outline-secondary" type="button">-</button>
-                            <input type="number" class="form-control text-center" value="1" min="0">
-                            <button class="btn btn-outline-secondary" type="button">+</button>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <p class="h5 mb-0">$4.99</p>
-                    </div>
-                    <div class="col-md-1">
-                        <button class="btn btn-link text-danger">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
-                                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+                }
+            }
             </div>
         </div>
 
@@ -124,20 +104,48 @@
                         <h5 class="card-title mb-4">Order Summary</h5>
                         <div class="d-flex justify-content-between mb-2">
                             <span>Subtotal</span>
-                            <span>$10.97</span>
+                            <span>
+                                @{
+                                    decimal sum = 0;
+                                }
+                                @foreach (var item in Model.ShoppingCart.Items)
+                                {
+                                    sum += item.Price * item.Quantity;
+                                }
+                                @sum EGP
+                            </span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span>Shipping</span>
-                            <span>$5.00</span>
+                            <span>
+                                @{
+                                    int shipping = 0;
+                                    if (Model.ShoppingCart.Items != null && Model.ShoppingCart.Items.Any())
+                                    {
+                                        shipping = 45;
+                                    }
+                                }
+                                @shipping EGP
+                            </span>
+
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span>Tax</span>
-                            <span>$1.32</span>
+                            <span>
+                                @{
+                                    decimal tax = 0.14m;
+                                    decimal taxAmount = sum * tax;
+                                }
+                                @(taxAmount.ToString("F2")) EGP
+                            </span>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between mb-4">
                             <span class="h5">Total</span>
-                            <span class="h5">$17.29</span>
+                            <span class="h5">
+                             @{decimal total = sum + shipping + taxAmount;}
+                                @(total.ToString("F2")) EGP
+                            </span>
                         </div>
                         <form action="checkout" method="get">
                             <button type="submit" class="btn btn-primary w-100">Proceed to Checkout</button>
