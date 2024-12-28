@@ -74,16 +74,31 @@
                         <img src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=300&q=80" class="card-img-top" alt="Fruits">
                         <div class="card-body text-center">
                             <h5 class="card-title">Fruits</h5>
-                            <a asp-page="/Products#fruits" class="btn btn-outline-primary">Shop Now</a>
+                            <a asp-page="/Products"
+                               asp-route-categories="Fruits"
+                               asp-route-minPrice=""
+                               asp-route-maxPrice=""
+                               asp-route-sortBy="Popularity"
+                               class="btn btn-outline-primary">
+                                Shop Now
+                            </a>
                         </div>
                     </div>
                 </div>
+
                 <div class="col-md-3">
                     <div class="card h-100 border-0 shadow-sm">
                         <img src="https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?auto=format&fit=crop&w=300&q=80" class="card-img-top" alt="Vegetables">
                         <div class="card-body text-center">
                             <h5 class="card-title">Vegetables</h5>
-                            <a asp-page="/Products#vegetables" class="btn btn-outline-primary">Shop Now</a>
+                            <a asp-page="/Products"
+                               asp-route-categories="Vegetables"
+                               asp-route-minPrice=""
+                               asp-route-maxPrice=""
+                               asp-route-sortBy="Popularity"
+                               class="btn btn-outline-primary">
+                                Shop Now
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -92,89 +107,38 @@
                         <img src="https://images.unsplash.com/photo-1608198093002-ad4e005484ec?auto=format&fit=crop&w=300&q=80" class="card-img-top" alt="Dairy">
                         <div class="card-body text-center">
                             <h5 class="card-title">Dairy</h5>
-                            <a asp-page="/Products#dairy" class="btn btn-outline-primary">Shop Now</a>
+                            <a asp-page="/Products"
+                               asp-route-categories="Dairy"
+                               asp-route-minPrice=""
+                               asp-route-maxPrice=""
+                               asp-route-sortBy="Popularity"
+                               class="btn btn-outline-primary">
+                                Shop Now
+                            </a>
                         </div>
                     </div>
                 </div>
+
                 <div class="col-md-3">
                     <div class="card h-100 border-0 shadow-sm">
                         <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=300&q=80" class="card-img-top" alt="Bakery">
                         <div class="card-body text-center">
                             <h5 class="card-title">Bakery</h5>
-                            <a asp-page="/Products#bakery" class="btn btn-outline-primary">Shop Now</a>
+                            <a asp-page="/Products"
+                               asp-route-categories="Bakery"
+                               asp-route-minPrice=""
+                               asp-route-maxPrice=""
+                               asp-route-sortBy="Popularity"
+                               class="btn btn-outline-primary">
+                                Shop Now
+                            </a>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
-
-    <!-- Special Offers -->
-    <section class="bg-light py-5">
-        <div class="container">
-            <h2 class="text-center mb-4">Special Offers</h2>
-            <div class="row g-4">
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm">
-                        <div class="row g-0">
-                            <div class="col-md-4">
-                                <img src="https://images.unsplash.com/photo-1603833665858-e61d17a86224?auto=format&fit=crop&w=300&q=80" class="img-fluid rounded-start h-100 object-fit-cover" alt="Fresh Bananas">
-                            </div>
-                            <div class="col-md-8">
-                                <div class="card-body">
-                                    <h5 class="card-title">Organic Bananas</h5>
-                                    <p class="card-text">Get 20% off on all organic bananas this week!</p>
-                                    <p class="card-text"><span class="text-decoration-line-through">$3.99</span> <span class="text-primary fw-bold">$2.99/lb</span></p>
-                                    <a asp-page="/products" class="btn btn-primary">Shop Now</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm">
-                        <div class="row g-0">
-                            <div class="col-md-4">
-                                <img src="https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=300&q=80" class="img-fluid rounded-start h-100 object-fit-cover" alt="Organic Milk">
-                            </div>
-                            <div class="col-md-8">
-                                <div class="card-body">
-                                    <h5 class="card-title">Organic Milk</h5>
-                                    <p class="card-text">Buy 2 get 1 free on all organic milk products!</p>
-                                    <p class="card-text"><span class="text-primary fw-bold">$4.99/gallon</span></p>
-                                    <a asp-page="/Products" class="btn btn-primary">Shop Now</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Newsletter -->
-    <section class="py-5">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-6 text-center">
-                    <h2 class="mb-4">Subscribe to Our Newsletter</h2>
-                    <p class="mb-4">Get weekly updates about our latest offers and promotions!</p>
-                    <form class="row g-3 justify-content-center" method="post">
-                        <div class="col-auto flex-grow-1">
-                            <input type="email" class="form-control" placeholder="Enter your email" name="email" required>
-                            <div class="invalid-feedback">
-                                Please enter a valid email address.
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <button type="submit" class="btn btn-primary">Subscribe</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </section>
-
 
     <!-- Footer -->
     <footer class="bg-dark text-white py-4">
@@ -206,7 +170,6 @@
                     <ul class="list-unstyled">
                         <li><a asp-page="/About" class="text-white text-decoration-none">About Us</a></li>
                         <li><a asp-page="/Products" class="text-white text-decoration-none">Products</a></li>
-                        <li><a href="#" class="text-white text-decoration-none">Special Offers</a></li>
                         <li><a asp-page="/Contact" class="text-white text-decoration-none">Contact Us</a></li>
                     </ul>
                 </div>

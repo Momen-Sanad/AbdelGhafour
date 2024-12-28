@@ -23,8 +23,6 @@ namespace SuperMarket.Pages
 
             Products = new List<Product>();
 
-            //string connectionString = "Server=127.0.0.1,1433;Database=SMS;User=SA;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";
-
             string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
             SqlConnection connection = new SqlConnection(connectionString);
 
@@ -103,18 +101,13 @@ namespace SuperMarket.Pages
 
         public IActionResult OnPostAddToCart(int productId, string productName, decimal productPrice, string productImage)
         {
-
-            string connectionString = "Server=127.0.0.1,1433;Database=SMS;User=SA;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";
-
-//            string connectionString = "Server=127.0.0.1,1433;Database=SMS;User=SA;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";
-
-            //string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
+            string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
             SqlConnection connection = new SqlConnection(connectionString);
             try
             {
                 connection.Open();
 
-                string query = "INSERT INTO CartItem (CartID, CustomerID, ProductID, ProductName, ProductImage, Price, Quantity) VALUES (1, 1, @ProductID, @ProductName, @ProductImage, @Price, 1)";
+                string query = "INSERT INTO CartItem (CartID, CustomerID, ProductID, ProductName, ItemImage, Price, Quantity) VALUES (1, 1, @ProductID, @ProductName, @ItemImage, @Price, 1)";
 
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
@@ -122,7 +115,7 @@ namespace SuperMarket.Pages
                     command.Parameters.AddWithValue("@ProductID", productId);
                     command.Parameters.AddWithValue("@Price", productPrice);
                     command.Parameters.AddWithValue("@ProductName", productName);
-                    command.Parameters.AddWithValue("@ProductImage", productImage);
+                    command.Parameters.AddWithValue("@ItemImage", productImage);
                     command.ExecuteNonQuery();
                 }
 
@@ -138,13 +131,13 @@ namespace SuperMarket.Pages
             return RedirectToPage("cart");
         }
     }
-        public class Product
-        {
-            public string ProductID { get; set; }
-            public string ProductName { get; set; }
-            public decimal Price { get; set; }
-            public string Category { get; set; }
-            public string InventoryID { get; set; }
-            public string image { get; set; }
-        }
+    public class Product
+    {
+        public string ProductID { get; set; }
+        public string ProductName { get; set; }
+        public decimal Price { get; set; }
+        public string Category { get; set; }
+        public string InventoryID { get; set; }
+        public string image { get; set; }
+    }
 }

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 
 namespace SuperMarket.Pages
 {
@@ -11,14 +13,12 @@ namespace SuperMarket.Pages
         [BindProperty]
         public Product NewProduct { get; set; }
 
-        public bool IsEditing => Convert.ToInt32(NewProduct?.ProductID) != 0;
-
+        public bool IsEditing => NewProduct?.ProductID != null && Convert.ToInt32(NewProduct.ProductID) != 0;
 
         public void OnGet(int? editId)
         {
             LoadProducts();
 
-            // Handle the edit case if `editId` is provided
             if (editId.HasValue)
             {
                 NewProduct = Products.FirstOrDefault(p => Convert.ToInt32(p.ProductID) == editId.Value);
@@ -28,44 +28,6 @@ namespace SuperMarket.Pages
                 NewProduct = new Product(); // Initialize a new product for adding
             }
         }
-
-
-        //to potentially show all products later on if needed
-        public List<int> GetAllProductIDs()
-        {
-            var productIDs = new List<int>();
-            string connectionString = "Server=127.0.0.1,1433;Database=SMS;User=SA;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";
-
-            using var connection = new SqlConnection(connectionString);
-            const string query = "SELECT ProductID FROM Products";
-            var command = new SqlCommand(query, connection);
-            connection.Open();
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                if (reader["ProductID"] != DBNull.Value)
-                {
-                    productIDs.Add(Convert.ToInt32(reader["ProductID"]));
-                }
-            }
-            return productIDs;
-        }
-        public bool IsProductIDValid(int productID)
-        {
-
-            string connectionString = "Server=127.0.0.1,1433;Database=SMS;User=SA;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";
-
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                const string query = "SELECT COUNT(1) FROM Products WHERE ProductID = @ProductID";
-                var command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@ProductID", productID);
-                connection.Open();
-                return (int)command.ExecuteScalar() > 0;
-            }
-        }
-
-
 
         public IActionResult OnPostAdd()
         {
@@ -87,29 +49,27 @@ namespace SuperMarket.Pages
 
             if (isValidProductID)
             {
-                // ProductID already exists
                 ModelState.AddModelError("", "Product ID already exists. Please use a unique Product ID.");
                 LoadProducts();
                 return Page();
             }
 
-            // Proceed with inserting the new product
-            string connectionString = "Server=127.0.0.1,1433;Database=SMS;User=SA;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";
+            string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 string query = @"INSERT INTO Products 
-                                (ProductID, ProductName, Price, Category, InventoryID, ProductImage)
+                                (ProductID, ProductName, Price, category, InventoryID, image)
                                 VALUES 
-                                (@ProductID, @ProductName, @Price, @Category, @InventoryID, @ProductImage)";
+                                (@ProductID, @ProductName, @Price, @Category, @InventoryID, @Image)";
 
                 SqlCommand command = new SqlCommand(query, connection);
                 command.Parameters.AddWithValue("@ProductID", productID);
                 command.Parameters.AddWithValue("@ProductName", NewProduct.ProductName);
                 command.Parameters.AddWithValue("@Price", NewProduct.Price);
                 command.Parameters.AddWithValue("@Category", NewProduct.Category);
-                command.Parameters.AddWithValue("@InventoryID", NewProduct.InventoryID ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@ProductImage", NewProduct.image ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@InventoryID", NewProduct.InventoryID);
+                command.Parameters.AddWithValue("@Image", NewProduct.image);
 
                 connection.Open();
                 command.ExecuteNonQuery();
@@ -118,11 +78,15 @@ namespace SuperMarket.Pages
             return RedirectToPage();
         }
 
-
-
         public IActionResult OnPostEdit(int productId)
         {
-            string connectionString = "Server=127.0.0.1,1433;Database=SMS;User=SA;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";
+            if (!ModelState.IsValid)
+            {
+                LoadProducts();
+                return Page();
+            }
+
+            string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
 
             try
             {
@@ -134,7 +98,7 @@ namespace SuperMarket.Pages
                     command.Parameters.AddWithValue("@Price", NewProduct.Price);
                     command.Parameters.AddWithValue("@category", NewProduct.Category);
                     command.Parameters.AddWithValue("@InventoryID", NewProduct.InventoryID);
-                    command.Parameters.AddWithValue("@ProductImage", NewProduct.image);
+                    command.Parameters.AddWithValue("@Image", NewProduct.image);
                     command.Parameters.AddWithValue("@ProductID", productId);
 
                     connection.Open();
@@ -146,14 +110,13 @@ namespace SuperMarket.Pages
             catch (SqlException e)
             {
                 Console.WriteLine(e.ToString());
-                // Optionally, handle the error (e.g., display a message to the user)
                 return Page();
             }
         }
 
         public IActionResult OnPostDelete(string productId)
         {
-            string connectionString = "Server=127.0.0.1,1433;Database=SMS;User=SA;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";
+            string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -170,7 +133,7 @@ namespace SuperMarket.Pages
 
         private void LoadProducts()
         {
-            string connectionString = "Server=127.0.0.1,1433;Database=SMS;User=SA;Password=YourStrong@Passw0rd;TrustServerCertificate=True;";
+            string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -185,12 +148,26 @@ namespace SuperMarket.Pages
                     {
                         ProductID = reader["ProductID"].ToString(),
                         ProductName = reader["ProductName"].ToString(),
-                        Price = decimal.Parse(reader["Price"].ToString()),
+                        Price = decimal.Parse(reader["Price"].ToString()), 
                         Category = reader["category"].ToString(),
                         InventoryID = reader["InventoryID"].ToString(),
-                        image = reader["ProductImage"].ToString()
+                        image = reader["image"].ToString()
                     });
                 }
+            }
+        }
+
+        private bool IsProductIDValid(int productID)
+        {
+            string connectionString = "Data Source=DESKTOP-K96CGJS\\SQLEXPRESS;Initial Catalog=SMS;Integrated Security=True;TrustServerCertificate=True";
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                const string query = "SELECT COUNT(1) FROM Products WHERE ProductID = @ProductID";
+                var command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@ProductID", productID);
+                connection.Open();
+                return (int)command.ExecuteScalar() > 0;
             }
         }
     }
